@@ -1,0 +1,34 @@
+# Node.js
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# TypeScript
+*.tsbuildinfo
+
+# Optional npm cache directory
+i-pnpm-store/
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# MacOS
+.DS_Store
+
+# VSCode
+.vscode/*
+!
+.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+.goose
+.coverage
+.package-lock.json
+results/
+.env
