@@ -214,25 +214,35 @@ export function renderTestResultsPage(
 
 function renderTestResultsRows(testId: string, results: TestResultRow[]): string {
   return results.map(row => {
-    const resultClass = row.Result.toLowerCase().includes('error') ? 'error' : 
-                       row.Result.toLowerCase().includes('success') ? 'success' : '';
+    // Add null checks for all properties
+    const timestamp = row.Timestamp || '';
+    const step = row.Step || '';
+    const action = row.Action || '';
+    const elementInfo = row['Element Info'] || '';
+    const result = row.Result || '';
+    const screenshot = row.Screenshot || '';
     
-    return `
-      <tr>
-        <td>${row.Timestamp}</td>
-        <td>${row.Step}</td>
-        <td>${row.Action}</td>
-        <td>${row['Element Info']}</td>
-        <td class="${resultClass}">${row.Result}</td>
-        <td>${
-          row.Screenshot !== 'N/A' 
-            ? `<img src="/results/${testId}/screenshots/${row.Screenshot}" class="screenshot" onclick="showFullImage(this.src)" />`
-            : 'N/A'
-        }</td>
-      </tr>
-    `;
-  }).join('');
-}
+    // Add null check before calling toLowerCase
+    const resultClass = result && result.toLowerCase().includes('error') ? 'error' : 
+                       result && result.toLowerCase().includes('success') ? 'success' : '';
+    
+                       return `
+                       <tr>
+                         <td>${timestamp}</td>
+                         <td>${step}</td>
+                         <td>${action}</td>
+                         <td>${elementInfo}</td>
+                         <td class="${resultClass}">${result}</td>
+                         <td>
+                           ${screenshot !== 'N/A' 
+                             ? `<img src="/results/${testId}/screenshots/${screenshot}" class="screenshot" onclick="showFullImage(this.src)" />`
+                             : 'N/A'
+                           }
+                         </td>
+                       </tr>
+                     `;
+                   }).join('');
+                 }
 
 function getStatusBadge(status: TestStatus): string {
   switch (status) {

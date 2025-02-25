@@ -20,14 +20,51 @@ export async function typeIntoElement(
   await driver.pause(500);
 }
 
-export async function bypassPopups(driver: Browser): Promise<void> {
+/**
+ * Checks for and handles any system alerts/popups
+ * 
+ * @param driver WebdriverIO Browser instance
+ * @returns True if an alert was handled, false otherwise
+ */
+export async function bypassPopups(driver: Browser): Promise<boolean> {
   try {
+    // First check if an alert exists using a safer method
+    const alertExists = await checkIfAlertExists(driver);
+    
+    if (!alertExists) {
+      return false;
+    }
+    
+    // If we confirmed an alert exists, get its text and accept it
     const alertText = await driver.getAlertText();
     console.log(`System alert detected with text: "${alertText}"`);
     await driver.acceptAlert();
     console.log('Alert accepted');
-  } catch {
-    // No alert present
+    return true;
+  } catch (error) {
+    // Don't log the error, just return false
+    return false;
+  }
+}
+
+/**
+ * Safely checks if an alert is present without throwing errors
+ * 
+ * @param driver WebdriverIO Browser instance
+ * @returns True if an alert exists, false otherwise
+ */
+async function checkIfAlertExists(driver: Browser): Promise<boolean> {
+  try {
+    // Use executeScript to check for an alert without throwing an error
+    const alertPresent = await driver.execute(() => {
+      // @ts-ignore - window.alert is available in the browser context
+      return window.alert !== undefined && window.alert !== null;
+    });
+    
+    return !!alertPresent;
+  } catch (error) {
+    // If there's an error checking, assume no alert
+    return false;
   }
 }
 
