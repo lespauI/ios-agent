@@ -1,5 +1,6 @@
 // src/llm/llm-service.ts
 import { LLMResult, LLMService } from '../types/llm-types';
+export { LLMResult, LLMService }; 
 
 /**
  * Abstract base class for LLM services

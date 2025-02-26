@@ -120,3 +120,96 @@ export async function verifyElement(
     };
   }
 }
+
+/**
+ * Taps at specific coordinates on the screen
+ * 
+ * @param driver WebdriverIO Browser instance
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @returns True if successful, false otherwise
+ */
+export async function tapByCoordinates(
+  driver: Browser,
+  x: number,
+  y: number
+): Promise<boolean> {
+  try {
+    // Try using mobile: tap command which is more reliable for iOS
+    await driver.executeScript('mobile: tap', [{
+      x: x,
+      y: y
+    }]);
+    console.log(`Successfully tapped at coordinates (${x}, ${y})`);
+    return true;
+  } catch (error) {
+    console.error(`Error tapping at coordinates (${x}, ${y}):`, error);
+    
+    try {
+      // Fallback: Try to find an element at those coordinates
+      const elem = await driver.executeScript('mobile: findElementByCoordinates', [x, y]);
+      
+      if (elem) {
+        await elem.click();
+        console.log(`Successfully tapped element found at coordinates (${x}, ${y})`);
+        return true;
+      }
+    } catch (fallbackError) {
+      console.error('Fallback method also failed:', fallbackError);
+    }
+    
+    return false;
+  }
+}
+
+/**
+ * Types text after tapping at specific coordinates
+ * 
+ * @param driver WebdriverIO Browser instance
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param text Text to type
+ * @returns True if successful, false otherwise
+ */
+export async function typeAtCoordinates(
+  driver: Browser,
+  x: number,
+  y: number,
+  text: string
+): Promise<boolean> {
+  try {
+    // First tap at the coordinates
+    const tapSuccess = await tapByCoordinates(driver, x, y);
+    if (!tapSuccess) {
+      return false;
+    }
+    
+    await driver.pause(500);
+    
+    // Try to type using the mobile: type command
+    try {
+      await driver.executeScript('mobile: type', [text]);
+      console.log(`Successfully typed "${text}" at coordinates (${x}, ${y})`);
+      return true;
+    } catch (typeError) {
+      console.error('Error typing text:', typeError);
+      
+      // Fallback: Try to send keys directly
+      try {
+        await driver.keys(text.split(''));
+        console.log(`Successfully typed "${text}" using keys`);
+        return true;
+      } catch (keysError) {
+        console.error('Error sending keys:', keysError);
+        return false;
+      }
+    }
+  } catch (error) {
+    console.error(`Error in typeAtCoordinates (${x}, ${y}):`, error);
+    return false;
+  }
+}
+
+
+
+

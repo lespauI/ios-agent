@@ -83,6 +83,8 @@ export interface RecognizedElement {
     name: string;
     type: string;
     isInput?: boolean;
+    x?: number;  // Add coordinate support
+    y?: number;  // Add coordinate support
   }
   
   /**
@@ -95,4 +97,3 @@ export interface RecognizedElement {
     selector?: string;
     error?: string;
   }
-  

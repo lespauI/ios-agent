@@ -1,10 +1,11 @@
-// src/device/element-finder.ts
 import { Browser, ChainablePromiseElement } from 'webdriverio';
 
 export interface ElementInfo {
   name: string;
   type: string;
   isInput?: boolean;
+  x?: number;  // Add coordinate support
+  y?: number;  // Add coordinate support
 }
 
 export async function findElement(
@@ -19,9 +20,56 @@ export async function findElement(
     }
 
     // Regular element finding strategies
-    return await findRegularElement(driver, elementInfo);
+    const element = await findRegularElement(driver, elementInfo);
+    if (element) return element;
+    
+    // If we have coordinates, try finding by coordinates as a last resort
+    if (elementInfo.x !== undefined && elementInfo.y !== undefined) {
+      console.log(`Trying to find element by coordinates (${elementInfo.x}, ${elementInfo.y})`);
+      return await findElementByCoordinates(driver, elementInfo.x, elementInfo.y);
+    }
+    
+    return null;
   } catch (error) {
     console.error('Error finding element:', error);
+    return null;
+  }
+}
+
+export async function findElementByCoordinates(
+  driver: Browser,
+  x: number,
+  y: number
+): Promise<ChainablePromiseElement | null> {
+  try {
+    // Get the element at the specified coordinates
+    const element = await driver.executeScript(
+      'return document.elementFromPoint(arguments[0], arguments[1]);',
+      [x, y]
+    );
+    
+    if (element) {
+      console.log(`Found element at coordinates (${x}, ${y})`);
+      return element;
+    }
+
+    // If the JavaScript approach doesn't work, try using WebdriverIO's touchAction
+    // This is a fallback and might not work as expected in all cases
+    const size = await driver.getWindowSize();
+    const touchAction = {
+      actions: [
+        { action: 'press', x, y },
+        { action: 'release' }
+      ]
+    };
+    
+    await driver.performActions([touchAction]);
+    console.log(`Performed touch action at coordinates (${x}, ${y})`);
+    
+    // Return a dummy element since we can't get the actual element
+    return null;
+  } catch (error) {
+    console.error(`Error finding element at coordinates (${x}, ${y}):`, error);
     return null;
   }
 }

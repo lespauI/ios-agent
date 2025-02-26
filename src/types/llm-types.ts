@@ -1,5 +1,3 @@
-// src/types/llm-types.ts
-
 import { AppContext } from './device-types';
 
 /**
@@ -8,24 +6,27 @@ import { AppContext } from './device-types';
 export interface LLMResult {
   nextAction: string;
   element?: {
-    type: 'tap' | 'type' | 'verify' | 'swipe' | 'scroll';  
+    type: 'tap' | 'type' | 'verify' | 'swipe' | 'scroll';
     name: string;
     x: number;
     y: number;
   };
   text?: string;
-  confidence?: number;
-  reasoning?: string;
+  usedVision?: boolean;
 }
 
-/**
- * Interface for LLM service implementations
- */
 export interface LLMService {
   callLLM(
     userPrompt: string,
     pageSource: string,
-    screenshotPath: string
+    screenshotPath: string,
+    actionHistory: string,
+    stateInfo?: {
+      consecutiveFailures: number;
+      lastFailureReason?: string;
+      failedElements: string[];
+    },
+    useVision?: boolean
   ): Promise<LLMResult>;
 }
 
@@ -59,4 +60,19 @@ export interface LLMMessage {
     text?: string;
     image_url?: { url: string };
   }>;
+}
+
+export interface LLMService {
+  callLLM(
+    userPrompt: string,
+    pageSource: string,
+    screenshotPath: string,
+    actionHistory: string,
+    stateInfo?: {
+      consecutiveFailures: number;
+      lastFailureReason?: string;
+      failedElements: string[];
+    },
+    useVision?: boolean
+  ): Promise<LLMResult>;
 }
